@@ -217,21 +217,29 @@
         }
         animateGalaxy();
 
-        // Presentation Logic
+        // ========================================
+        // PRESENTATION SLIDES - EDIT CONTENT HERE
+        // ========================================
+        
         let currentSlide = 0;
         
         const slides = [
+            // SLIDE 1: INTRO - Logo page
             {
                 title: "SPACE INSTITUTO",
                 subtitle: "La Escuela del Futuro",
                 type: "intro",
                 logo: true
             },
+            
+            // SLIDE 2: WELCOME - Introduction text
             {
-                title: "Bienvenidos",
-                content: "Space Instituto es una escuela del futuro. Usamos tecnología nueva. Las clases son muy divertidas.",
+                title: "Bienvenido",
+                content: "Space Instituto es una escuela del futuro. Tiene tecnología nueva. Las clases son divertidas.",
                 type: "content"
             },
+            
+            // SLIDE 3: SUBJECTS - List of subjects with icons
             {
                 title: "Nuestras Materias",
                 subjects: [
@@ -242,19 +250,33 @@
                     { name: "Ajedrez", icon: "♟️", color: "from-gray-600 to-slate-700" },
                     { name: "Geografía", icon: "🌍", color: "from-teal-500 to-blue-600" },
                     { name: "Programación", icon: "💻", color: "from-purple-500 to-indigo-600" }
+                    // Add more subjects here if needed
                 ],
                 type: "subjects"
             },
+            
+            // SLIDE 4: WHY THESE SUBJECTS - Explanation
             {
                 title: "¿Por Qué Estas Materias?",
                 content: "Arte para ser creativos. Matemáticas y Física para entender el espacio. Astrología para las estrellas. Ajedrez para pensar bien. Geografía para los planetas. Programación para hacer tecnología.",
                 type: "content"
             },
+            
+            // SLIDE 5: SUBJECTS NOT INCLUDED - What's NOT in the school
+            {
+                title: "¿Qué Materias NO Hay?",
+                content: "No hay Historia porque estudiamos el futuro. No hay Educación Física tradicional porque tenemos deportes espaciales. No hay clases aburridas porque todo es interactivo y divertido.",
+                type: "content"
+            },
+            
+            // SLIDE 6: CLASSROOMS - Description of classrooms
             {
                 title: "Las Aulas",
                 content: "Las aulas son muy modernas. Hay pantallas grandes. Tenemos hologramas. Hay robots. Cada estudiante tiene una tablet. Todo es digital.",
                 type: "content"
             },
+            
+            // SLIDE 7: FACILITIES - School facilities
             {
                 title: "Instalaciones",
                 items: [
@@ -264,18 +286,31 @@
                     { icon: "📚", text: "Biblioteca digital" },
                     { icon: "🔬", text: "Laboratorios" },
                     { icon: "⚽", text: "Zonas deportivas" }
+                    // Add more facilities here if needed
                 ],
                 type: "facilities"
             },
+            
+            // SLIDE 8: FACILITIES NOT INCLUDED - What facilities are NOT there
+            {
+                title: "¿Qué NO Hay?",
+                content: "No hay aulas tradicionales con sillas viejas. No hay pizarras normales porque usamos hologramas. No hay libros de papel porque todo es digital. No hay exámenes difíciles porque aprendemos jugando.",
+                type: "content"
+            },
+            
+            // SLIDE 9: STUDENTS & TEACHERS - Numbers and info
             {
                 title: "Estudiantes y Profesores",
                 content: "Hay 500 estudiantes. Tenemos 30 profesores. Las clases son pequeñas. Hay 20 estudiantes por clase. Los profesores son expertos.",
                 type: "content"
             },
+            
+            // SLIDE 10: TIMETABLE - Weekly schedule
             {
                 title: "Horario de Clases",
                 schedule: {
                     weekdays: [
+                        // Edit the schedule here - format: { time: "hour", mon: "subject", tue: "subject", wed: "subject", thu: "subject", fri: "subject" }
                         { time: "8:00 - 9:00", mon: "Matemáticas", tue: "Física", wed: "Arte", thu: "Programación", fri: "Geografía" },
                         { time: "9:00 - 10:00", mon: "Física", tue: "Matemáticas", wed: "Programación", thu: "Geografía", fri: "Arte" },
                         { time: "10:00 - 10:30", mon: "Descanso", tue: "Descanso", wed: "Descanso", thu: "Descanso", fri: "Descanso" },
@@ -284,16 +319,13 @@
                         { time: "12:30 - 13:30", mon: "Almuerzo", tue: "Almuerzo", wed: "Almuerzo", thu: "Almuerzo", fri: "Almuerzo" },
                         { time: "13:30 - 14:30", mon: "Geografía", tue: "Ajedrez", wed: "Astrología", thu: "Ajedrez", fri: "Matemáticas" },
                         { time: "14:30 - 15:30", mon: "Astrología", tue: "Arte", wed: "Ajedrez", thu: "Astrología", fri: "Física" }
-                    ],
-                    weekend: [
-                        { time: "9:00 - 11:00", sat: "Club de Robótica", sun: "-" },
-                        { time: "11:00 - 13:00", sat: "Deportes", sun: "-" },
-                        { time: "13:00 - 14:00", sat: "Almuerzo", sun: "-" },
-                        { time: "14:00 - 16:00", sat: "Actividades Extra", sun: "-" }
+                        // Add more time slots here if needed
                     ]
                 },
                 type: "schedule"
             },
+            
+            // SLIDE 11: EXTRA ACTIVITIES - After school activities
             {
                 title: "Actividades Extra",
                 items: [
@@ -303,20 +335,35 @@
                     { icon: "⚽", text: "Deportes" },
                     { icon: "🎭", text: "Teatro" },
                     { icon: "🧪", text: "Experimentos" }
+                    // Add more activities here if needed
                 ],
                 type: "facilities"
             },
+            
+            // SLIDE 12: ACTIVITIES NOT ALLOWED - What you CANNOT do
+            {
+                title: "¿Qué NO Se Puede Hacer?",
+                content: "No se puede usar teléfonos en clase porque es importante escuchar. No se puede hacer deportes peligrosos. No se puede llegar tarde porque el tiempo es importante. Pero hay muchas libertades y es muy divertido.",
+                type: "content"
+            },
+            
+            // SLIDE 13: SPACE TRIPS - Excursions
             {
                 title: "Viajes Espaciales",
                 content: "Visitamos planetas con simuladores. Vamos al observatorio. Vemos las estrellas con telescopios. Hacemos viajes virtuales a la Luna y Marte.",
                 type: "content"
             },
+            
+            // SLIDE 14: OUTRO - Final slide
             {
                 title: "¡Únete!",
                 subtitle: "El Futuro Está Aquí 🚀",
                 type: "outro"
             }
         ];
+        // ========================================
+        // END OF EDITABLE CONTENT
+        // ========================================
 
         function renderSlide() {
             const slide = slides[currentSlide];
@@ -416,59 +463,29 @@
                     </tr>
                 `).join('');
                 
-                const weekendHTML = slide.schedule.weekend.map(row => `
-                    <tr class="border-b border-blue-400/20 hover:bg-blue-400/10 transition-colors">
-                        <td class="hologram-cell p-2 sm:p-3 text-xs sm:text-sm md:text-base font-semibold text-blue-200">${row.time}</td>
-                        <td class="hologram-cell p-2 sm:p-3 text-xs sm:text-sm md:text-base text-blue-100">${row.sat}</td>
-                        <td class="hologram-cell p-2 sm:p-3 text-xs sm:text-sm md:text-base text-blue-100">${row.sun}</td>
-                    </tr>
-                `).join('');
-                
                 content.innerHTML = `
-                    <div class="space-y-4 sm:space-y-6 md:space-y-8 max-w-7xl mx-auto px-2">
+                    <div class="space-y-4 sm:space-y-6 md:space-y-8 flex flex-col items-center justify-center">
                         <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-200 to-pink-300 leading-tight mb-6 sm:mb-8">
                             ${slide.title}
                         </h2>
                         
-                        <div class="hologram-table backdrop-blur-xl p-3 sm:p-4 md:p-6 rounded-2xl shadow-2xl relative overflow-hidden mb-6">
+                        <div class="hologram-table backdrop-blur-xl p-4 sm:p-6 md:p-8 lg:p-10 rounded-2xl shadow-2xl relative overflow-hidden max-w-5xl w-full">
                             <div class="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-50"></div>
                             <div class="relative z-10">
-                                <h3 class="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-purple-100 mb-4 sm:mb-6">Lunes a Viernes</h3>
                                 <div class="overflow-x-auto">
-                                    <table class="w-full text-left border-collapse min-w-full">
+                                    <table class="w-full text-center border-collapse">
                                         <thead>
                                             <tr class="border-b-2 border-purple-400/40">
-                                                <th class="hologram-cell p-2 sm:p-3 text-xs sm:text-sm md:text-base lg:text-lg font-bold text-purple-200">Hora</th>
-                                                <th class="hologram-cell p-2 sm:p-3 text-xs sm:text-sm md:text-base lg:text-lg font-bold text-purple-200">Lunes</th>
-                                                <th class="hologram-cell p-2 sm:p-3 text-xs sm:text-sm md:text-base lg:text-lg font-bold text-purple-200">Martes</th>
-                                                <th class="hologram-cell p-2 sm:p-3 text-xs sm:text-sm md:text-base lg:text-lg font-bold text-purple-200">Miércoles</th>
-                                                <th class="hologram-cell p-2 sm:p-3 text-xs sm:text-sm md:text-base lg:text-lg font-bold text-purple-200">Jueves</th>
-                                                <th class="hologram-cell p-2 sm:p-3 text-xs sm:text-sm md:text-base lg:text-lg font-bold text-purple-200">Viernes</th>
+                                                <th class="hologram-cell p-3 sm:p-4 text-sm sm:text-base md:text-lg lg:text-xl font-bold text-purple-200">Hora</th>
+                                                <th class="hologram-cell p-3 sm:p-4 text-sm sm:text-base md:text-lg lg:text-xl font-bold text-purple-200">Lunes</th>
+                                                <th class="hologram-cell p-3 sm:p-4 text-sm sm:text-base md:text-lg lg:text-xl font-bold text-purple-200">Martes</th>
+                                                <th class="hologram-cell p-3 sm:p-4 text-sm sm:text-base md:text-lg lg:text-xl font-bold text-purple-200">Miércoles</th>
+                                                <th class="hologram-cell p-3 sm:p-4 text-sm sm:text-base md:text-lg lg:text-xl font-bold text-purple-200">Jueves</th>
+                                                <th class="hologram-cell p-3 sm:p-4 text-sm sm:text-base md:text-lg lg:text-xl font-bold text-purple-200">Viernes</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             ${weekdaysHTML}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="hologram-table backdrop-blur-xl p-3 sm:p-4 md:p-6 rounded-2xl shadow-2xl relative overflow-hidden">
-                            <div class="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-50"></div>
-                            <div class="relative z-10">
-                                <h3 class="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-blue-100 mb-4 sm:mb-6">Fin de Semana (Opcional)</h3>
-                                <div class="overflow-x-auto">
-                                    <table class="w-full text-left border-collapse">
-                                        <thead>
-                                            <tr class="border-b-2 border-blue-400/40">
-                                                <th class="hologram-cell p-2 sm:p-3 text-xs sm:text-sm md:text-base lg:text-lg font-bold text-blue-200">Hora</th>
-                                                <th class="hologram-cell p-2 sm:p-3 text-xs sm:text-sm md:text-base lg:text-lg font-bold text-blue-200">Sábado</th>
-                                                <th class="hologram-cell p-2 sm:p-3 text-xs sm:text-sm md:text-base lg:text-lg font-bold text-blue-200">Domingo</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            ${weekendHTML}
                                         </tbody>
                                     </table>
                                 </div>

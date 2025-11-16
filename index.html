@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space Instituto - Mi Escuela Ideal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Megrim&display=swap');
+        
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        @keyframes fade-in {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes slide-up {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes glow {
+            0%, 100% { filter: drop-shadow(0 0 20px rgba(34, 211, 238, 0.6)); }
+            50% { filter: drop-shadow(0 0 40px rgba(34, 211, 238, 0.9)); }
+        }
+        
+        .animate-fade-in {
+            animation: fade-in 0.4s ease-out;
+        }
+        
+        .animate-slide-up {
+            animation: slide-up 0.3s ease-out forwards;
+            opacity: 0;
+        }
+        
+        .animate-glow {
+            animation: glow 2s ease-in-out infinite;
+        }
+        
+        .animate-pulse-slow {
+            animation: pulse 3s ease-in-out infinite;
+        }
+
+        .hologram-table {
+            background: linear-gradient(135deg, rgba(138, 43, 226, 0.1) 0%, rgba(75, 0, 130, 0.1) 100%);
+            border: 2px solid rgba(138, 43, 226, 0.5);
+            box-shadow: 0 0 30px rgba(138, 43, 226, 0.3), inset 0 0 20px rgba(138, 43, 226, 0.1);
+        }
+
+        .hologram-cell {
+            border: 1px solid rgba(138, 43, 226, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .hologram-cell:hover {
+            background: rgba(138, 43, 226, 0.2);
+            box-shadow: 0 0 15px rgba(138, 43, 226, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container"></div>
+
+    <div id="app" class="relative w-full h-screen overflow-hidden" style="z-index: 10;">
+        <div class="relative h-full flex items-center justify-center p-3 sm:p-4 md:p-6 lg:p-8">
+            <div id="slideContent" class="w-full max-w-7xl text-center animate-fade-in"></div>
+        </div>
+
+        <!-- Navigation -->
+        <button id="prevBtn" class="absolute left-2 sm:left-4 md:left-8 top-1/2 -translate-y-1/2 bg-cyan-500/20 hover:bg-cyan-500/40 backdrop-blur-md p-2 sm:p-3 md:p-4 rounded-full border-2 border-cyan-400/50 transition-all shadow-lg">
+            <svg class="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-cyan-100" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+        </button>
+        
+        <button id="nextBtn" class="absolute right-2 sm:right-4 md:right-8 top-1/2 -translate-y-1/2 bg-cyan-500/20 hover:bg-cyan-500/40 backdrop-blur-md p-2 sm:p-3 md:p-4 rounded-full border-2 border-cyan-400/50 transition-all shadow-lg">
+            <svg class="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-cyan-100" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+        </button>
+
+        <div id="indicators" class="absolute bottom-4 sm:bottom-6 md:bottom-8 left-1/2 -translate-x-1/2 flex gap-2 sm:gap-3 flex-wrap justify-center px-2"></div>
+
+        <div id="counter" class="absolute top-4 sm:top-6 md:top-8 right-4 sm:right-6 md:right-8 text-cyan-100 text-sm sm:text-base md:text-lg backdrop-blur-md bg-cyan-500/20 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border-2 border-cyan-400/50 font-bold shadow-lg"></div>
+    </div>
+
+    <script type="module">
+        import * as THREE from "https://cdn.skypack.dev/three@0.136.0";
+        import {OrbitControls} from "https://cdn.skypack.dev/three@0.136.0/examples/jsm/controls/OrbitControls";
+
+        // Three.js Galaxy Background
+        let scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x160016);
+        let camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 1, 1000);
+        camera.position.set(0, 4, 21);
+        let renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(innerWidth, innerHeight);
+        document.getElementById('canvas-container').appendChild(renderer.domElement);
+        
+        window.addEventListener("resize", event => {
+            camera.aspect = innerWidth / innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(innerWidth, innerHeight);
+        });
+
+        let controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.enablePan = false;
+        controls.enableZoom = false;
+
+        let gu = {
+            time: {value: 0}
+        }
+
+        let sizes = [];
+        let shift = [];
+        let pushShift = () => {
+            shift.push(
+                Math.random() * Math.PI, 
+                Math.random() * Math.PI * 2, 
+                (Math.random() * 0.9 + 0.1) * Math.PI * 0.1,
+                Math.random() * 0.9 + 0.1
+            );
+        }
+
+        let pts = new Array(50000).fill().map(p => {
+            sizes.push(Math.random() * 1.5 + 0.5);
+            pushShift();
+            return new THREE.Vector3().randomDirection().multiplyScalar(Math.random() * 0.5 + 9.5);
+        });
+
+        for(let i = 0; i < 100000; i++){
+            let r = 10, R = 40;
+            let rand = Math.pow(Math.random(), 1.5);
+            let radius = Math.sqrt(R * R * rand + (1 - rand) * r * r);
+            pts.push(new THREE.Vector3().setFromCylindricalCoords(radius, Math.random() * 2 * Math.PI, (Math.random() - 0.5) * 2 ));
+            sizes.push(Math.random() * 1.5 + 0.5);
+            pushShift();
+        }
+
+        let g = new THREE.BufferGeometry().setFromPoints(pts);
+        g.setAttribute("sizes", new THREE.Float32BufferAttribute(sizes, 1));
+        g.setAttribute("shift", new THREE.Float32BufferAttribute(shift, 4));
+        
+        let m = new THREE.PointsMaterial({
+            size: 0.125,
+            transparent: true,
+            depthTest: false,
+            blending: THREE.AdditiveBlending,
+            onBeforeCompile: shader => {
+                shader.uniforms.time = gu.time;
+                shader.vertexShader = `
+                    uniform float time;
+                    attribute float sizes;
+                    attribute vec4 shift;
+                    varying vec3 vColor;
+                    ${shader.vertexShader}
+                `.replace(
+                    `gl_PointSize = size;`,
+                    `gl_PointSize = size * sizes;`
+                ).replace(
+                    `#include <color_vertex>`,
+                    `#include <color_vertex>
+                        float d = length(abs(position) / vec3(40., 10., 40));
+                        d = clamp(d, 0., 1.);
+                        vColor = mix(vec3(227., 155., 0.), vec3(100., 50., 255.), d) / 255.;
+                    `
+                ).replace(
+                    `#include <begin_vertex>`,
+                    `#include <begin_vertex>
+                        float t = time;
+                        float moveT = mod(shift.x + shift.z * t, PI2);
+                        float moveS = mod(shift.y + shift.z * t, PI2);
+                        transformed += vec3(cos(moveS) * sin(moveT), cos(moveT), sin(moveS) * sin(moveT)) * shift.w;
+                    `
+                );
+                shader.fragmentShader = `
+                    varying vec3 vColor;
+                    ${shader.fragmentShader}
+                `.replace(
+                    `#include <clipping_planes_fragment>`,
+                    `#include <clipping_planes_fragment>
+                        float d = length(gl_PointCoord.xy - 0.5);
+                    `
+                ).replace(
+                    `vec4 diffuseColor = vec4( diffuse, opacity );`,
+                    `vec4 diffuseColor = vec4( vColor, smoothstep(0.5, 0.1, d));`
+                );
+            }
+        });
+
+        let p = new THREE.Points(g, m);
+        p.rotation.order = "ZYX";
+        p.rotation.z = 0.2;
+        scene.add(p);
+
+        let clock = new THREE.Clock();
+        
+        function animateGalaxy() {
+            requestAnimationFrame(animateGalaxy);
+            controls.update();
+            let t = clock.getElapsedTime() * 0.5;
+            gu.time.value = t * Math.PI;
+            p.rotation.y = t * 0.05;
+            renderer.render(scene, camera);
+        }
+        animateGalaxy();
+
+        // Presentation Logic
+        let currentSlide = 0;
+        
+        const slides = [
+            {
+                title: "SPACE INSTITUTO",
+                subtitle: "La Escuela del Futuro",
+                type: "intro",
+                logo: true
+            },
+            {
+                title: "Bienvenidos",
+                content: "Space Instituto es una escuela del futuro. Usamos tecnología nueva. Las clases son muy divertidas.",
+                type: "content"
+            },
+            {
+                title: "Nuestras Materias",
+                subjects: [
+                    { name: "Arte", icon: "🎨", color: "from-pink-500 to-rose-600" },
+                    { name: "Matemáticas", icon: "📐", color: "from-blue-500 to-cyan-600" },
+                    { name: "Física", icon: "⚛️", color: "from-green-500 to-emerald-600" },
+                    { name: "Astrología", icon: "✨", color: "from-yellow-500 to-orange-600" },
+                    { name: "Ajedrez", icon: "♟️", color: "from-gray-600 to-slate-700" },
+                    { name: "Geografía", icon: "🌍", color: "from-teal-500 to-blue-600" },
+                    { name: "Programación", icon: "💻", color: "from-purple-500 to-indigo-600" }
+                ],
+                type: "subjects"
+            },
+            {
+                title: "¿Por Qué Estas Materias?",
+                content: "Arte para ser creativos. Matemáticas y Física para entender el espacio. Astrología para las estrellas. Ajedrez para pensar bien. Geografía para los planetas. Programación para hacer tecnología.",
+                type: "content"
+            },
+            {
+                title: "Las Aulas",
+                content: "Las aulas son muy modernas. Hay pantallas grandes. Tenemos hologramas. Hay robots. Cada estudiante tiene una tablet. Todo es digital.",
+                type: "content"
+            },
+            {
+                title: "Instalaciones",
+                items: [
+                    { icon: "🚀", text: "Simulador de naves" },
+                    { icon: "🥽", text: "Sala de realidad virtual" },
+                    { icon: "🍽️", text: "Comedor grande" },
+                    { icon: "📚", text: "Biblioteca digital" },
+                    { icon: "🔬", text: "Laboratorios" },
+                    { icon: "⚽", text: "Zonas deportivas" }
+                ],
+                type: "facilities"
+            },
+            {
+                title: "Estudiantes y Profesores",
+                content: "Hay 500 estudiantes. Tenemos 30 profesores. Las clases son pequeñas. Hay 20 estudiantes por clase. Los profesores son expertos.",
+                type: "content"
+            },
+            {
+                title: "Horario de Clases",
+                schedule: {
+                    weekdays: [
+                        { time: "8:00 - 9:00", mon: "Matemáticas", tue: "Física", wed: "Arte", thu: "Programación", fri: "Geografía" },
+                        { time: "9:00 - 10:00", mon: "Física", tue: "Matemáticas", wed: "Programación", thu: "Geografía", fri: "Arte" },
+                        { time: "10:00 - 10:30", mon: "Descanso", tue: "Descanso", wed: "Descanso", thu: "Descanso", fri: "Descanso" },
+                        { time: "10:30 - 11:30", mon: "Arte", tue: "Programación", wed: "Matemáticas", thu: "Física", fri: "Ajedrez" },
+                        { time: "11:30 - 12:30", mon: "Programación", tue: "Geografía", wed: "Física", thu: "Arte", fri: "Astrología" },
+                        { time: "12:30 - 13:30", mon: "Almuerzo", tue: "Almuerzo", wed: "Almuerzo", thu: "Almuerzo", fri: "Almuerzo" },
+                        { time: "13:30 - 14:30", mon: "Geografía", tue: "Ajedrez", wed: "Astrología", thu: "Ajedrez", fri: "Matemáticas" },
+                        { time: "14:30 - 15:30", mon: "Astrología", tue: "Arte", wed: "Ajedrez", thu: "Astrología", fri: "Física" }
+                    ],
+                    weekend: [
+                        { time: "9:00 - 11:00", sat: "Club de Robótica", sun: "-" },
+                        { time: "11:00 - 13:00", sat: "Deportes", sun: "-" },
+                        { time: "13:00 - 14:00", sat: "Almuerzo", sun: "-" },
+                        { time: "14:00 - 16:00", sat: "Actividades Extra", sun: "-" }
+                    ]
+                },
+                type: "schedule"
+            },
+            {
+                title: "Actividades Extra",
+                items: [
+                    { icon: "🎮", text: "Club de videojuegos" },
+                    { icon: "🤖", text: "Club de robótica" },
+                    { icon: "🎸", text: "Música" },
+                    { icon: "⚽", text: "Deportes" },
+                    { icon: "🎭", text: "Teatro" },
+                    { icon: "🧪", text: "Experimentos" }
+                ],
+                type: "facilities"
+            },
+            {
+                title: "Viajes Espaciales",
+                content: "Visitamos planetas con simuladores. Vamos al observatorio. Vemos las estrellas con telescopios. Hacemos viajes virtuales a la Luna y Marte.",
+                type: "content"
+            },
+            {
+                title: "¡Únete!",
+                subtitle: "El Futuro Está Aquí 🚀",
+                type: "outro"
+            }
+        ];
+
+        function renderSlide() {
+            const slide = slides[currentSlide];
+            const content = document.getElementById('slideContent');
+            content.classList.remove('animate-fade-in');
+            void content.offsetWidth;
+            content.classList.add('animate-fade-in');
+            
+            if (slide.type === 'intro') {
+                content.innerHTML = `
+                    <div class="space-y-4 sm:space-y-6 md:space-y-8">
+                        ${slide.logo ? `
+                        <div class="flex justify-center mb-6 sm:mb-8">
+                            <div class="backdrop-blur-xl bg-gradient-to-br from-cyan-500/10 to-blue-600/10 p-8 sm:p-10 md:p-12 lg:p-16 rounded-3xl border-2 border-cyan-400/30 shadow-2xl relative overflow-hidden">
+                                <div class="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-50"></div>
+                                <img src="https://i.ibb.co/xKXQSp1h/logo.png" alt="Space Instituto Logo" class="relative z-10 w-48 h-48 sm:w-56 sm:h-56 md:w-64 md:h-64 lg:w-80 lg:h-80 object-contain animate-glow" style="filter: drop-shadow(0 0 30px rgba(34, 211, 238, 0.8));">
+                            </div>
+                        </div>` : ''}
+                        <div class="flex justify-center gap-3 sm:gap-4 mt-8 sm:mt-12">
+                            <div class="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-cyan-400 animate-bounce"></div>
+                            <div class="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-blue-400 animate-bounce" style="animation-delay: 0.2s"></div>
+                            <div class="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-purple-400 animate-bounce" style="animation-delay: 0.4s"></div>
+                        </div>
+                    </div>
+                `;
+            } else if (slide.type === 'content') {
+                content.innerHTML = `
+                    <div class="space-y-4 sm:space-y-6 md:space-y-8 backdrop-blur-xl bg-gradient-to-br from-cyan-500/15 to-blue-600/15 p-5 sm:p-6 md:p-8 lg:p-12 rounded-2xl sm:rounded-3xl border-2 border-cyan-400/40 shadow-2xl mx-2 max-w-5xl mx-auto relative overflow-hidden">
+                        <div class="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-50"></div>
+                        <div class="relative z-10">
+                            <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-200 to-blue-200 leading-tight">
+                                ${slide.title}
+                            </h2>
+                            <p class="text-base sm:text-lg md:text-xl lg:text-2xl text-cyan-50 leading-relaxed px-2 mt-4">
+                                ${slide.content}
+                            </p>
+                        </div>
+                    </div>
+                `;
+            } else if (slide.type === 'subjects') {
+                const subjectsHTML = slide.subjects.map((subject, i) => `
+                    <div class="backdrop-blur-xl bg-gradient-to-br from-white/15 to-white/5 p-3 sm:p-4 md:p-5 lg:p-6 rounded-xl sm:rounded-2xl border-2 border-cyan-400/50 transform hover:scale-105 transition-all duration-300 animate-slide-up relative overflow-hidden group" style="animation-delay: ${i * 0.1}s">
+                        <div class="absolute inset-0 bg-gradient-to-br from-cyan-400/10 to-blue-600/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <div class="relative z-10">
+                            <div class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl mb-2 sm:mb-3 md:mb-4 bg-gradient-to-br ${subject.color} w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 lg:w-20 lg:h-20 rounded-full flex items-center justify-center mx-auto shadow-xl border-2 border-white/30">
+                                ${subject.icon}
+                            </div>
+                            <p class="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-cyan-50">
+                                ${subject.name}
+                            </p>
+                        </div>
+                    </div>
+                `).join('');
+                
+                content.innerHTML = `
+                    <div class="space-y-6 sm:space-y-8 md:space-y-10 lg:space-y-12">
+                        <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 to-orange-300 leading-tight px-2">
+                            ${slide.title}
+                        </h2>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5 lg:gap-6 px-2">
+                            ${subjectsHTML}
+                        </div>
+                    </div>
+                `;
+            } else if (slide.type === 'facilities') {
+                const itemsHTML = slide.items.map(item => `
+                    <div class="backdrop-blur-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 p-4 sm:p-5 md:p-6 rounded-xl sm:rounded-2xl border-2 border-emerald-400/50 hover:scale-105 transition-all duration-300 relative overflow-hidden group">
+                        <div class="absolute inset-0 bg-gradient-to-br from-emerald-400/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <div class="relative z-10">
+                            <div class="text-3xl sm:text-4xl md:text-5xl mb-2 sm:mb-3">${item.icon}</div>
+                            <p class="text-sm sm:text-base md:text-lg lg:text-xl font-semibold text-emerald-50">
+                                ${item.text}
+                            </p>
+                        </div>
+                    </div>
+                `).join('');
+                
+                content.innerHTML = `
+                    <div class="space-y-6 sm:space-y-8 md:space-y-10 lg:space-y-12">
+                        <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-200 to-emerald-300 leading-tight px-2">
+                            ${slide.title}
+                        </h2>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-5 lg:gap-6 max-w-6xl mx-auto px-2">
+                            ${itemsHTML}
+                        </div>
+                    </div>
+                `;
+            } else if (slide.type === 'schedule') {
+                const weekdaysHTML = slide.schedule.weekdays.map(row => `
+                    <tr class="border-b border-purple-400/20 hover:bg-purple-400/10 transition-colors">
+                        <td class="hologram-cell p-2 sm:p-3 text-xs sm:text-sm md:text-base font-semibold text-purple-200">${row.time}</td>
+                        <td class="hologram-cell p-2 sm:p-3 text-xs sm:text-sm md:text-base text-purple-100">${row.mon}</td>
+                        <td class="hologram-cell p-2 sm:p-3 text-xs sm:text-sm md:text-base text-purple-100">${row.tue}</td>
+                        <td class="hologram-cell p-2 sm:p-3 text-xs sm:text-sm md:text-base text-purple-100">${row.wed}</td>
+                        <td class="hologram-cell p-2 sm:p-3 text-xs sm:text-sm md:text-base text-purple-100">${row.thu}</td>
+                        <td class="hologram-cell p-2 sm:p-3 text-xs sm:text-sm md:text-base text-purple-100">${row.fri}</td>
+                    </tr>
+                `).join('');
+                
+                const weekendHTML = slide.schedule.weekend.map(row => `
+                    <tr class="border-b border-blue-400/20 hover:bg-blue-400/10 transition-colors">
+                        <td class="hologram-cell p-2 sm:p-3 text-xs sm:text-sm md:text-base font-semibold text-blue-200">${row.time}</td>
+                        <td class="hologram-cell p-2 sm:p-3 text-xs sm:text-sm md:text-base text-blue-100">${row.sat}</td>
+                        <td class="hologram-cell p-2 sm:p-3 text-xs sm:text-sm md:text-base text-blue-100">${row.sun}</td>
+                    </tr>
+                `).join('');
+                
+                content.innerHTML = `
+                    <div class="space-y-4 sm:space-y-6 md:space-y-8 max-w-7xl mx-auto px-2">
+                        <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-200 to-pink-300 leading-tight mb-6 sm:mb-8">
+                            ${slide.title}
+                        </h2>
+                        
+                        <div class="hologram-table backdrop-blur-xl p-3 sm:p-4 md:p-6 rounded-2xl shadow-2xl relative overflow-hidden mb-6">
+                            <div class="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-50"></div>
+                            <div class="relative z-10">
+                                <h3 class="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-purple-100 mb-4 sm:mb-6">Lunes a Viernes</h3>
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-left border-collapse min-w-full">
+                                        <thead>
+                                            <tr class="border-b-2 border-purple-400/40">
+                                                <th class="hologram-cell p-2 sm:p-3 text-xs sm:text-sm md:text-base lg:text-lg font-bold text-purple-200">Hora</th>
+                                                <th class="hologram-cell p-2 sm:p-3 text-xs sm:text-sm md:text-base lg:text-lg font-bold text-purple-200">Lunes</th>
+                                                <th class="hologram-cell p-2 sm:p-3 text-xs sm:text-sm md:text-base lg:text-lg font-bold text-purple-200">Martes</th>
+                                                <th class="hologram-cell p-2 sm:p-3 text-xs sm:text-sm md:text-base lg:text-lg font-bold text-purple-200">Miércoles</th>
+                                                <th class="hologram-cell p-2 sm:p-3 text-xs sm:text-sm md:text-base lg:text-lg font-bold text-purple-200">Jueves</th>
+                                                <th class="hologram-cell p-2 sm:p-3 text-xs sm:text-sm md:text-base lg:text-lg font-bold text-purple-200">Viernes</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${weekdaysHTML}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="hologram-table backdrop-blur-xl p-3 sm:p-4 md:p-6 rounded-2xl shadow-2xl relative overflow-hidden">
+                            <div class="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-50"></div>
+                            <div class="relative z-10">
+                                <h3 class="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-blue-100 mb-4 sm:mb-6">Fin de Semana (Opcional)</h3>
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-left border-collapse">
+                                        <thead>
+                                            <tr class="border-b-2 border-blue-400/40">
+                                                <th class="hologram-cell p-2 sm:p-3 text-xs sm:text-sm md:text-base lg:text-lg font-bold text-blue-200">Hora</th>
+                                                <th class="hologram-cell p-2 sm:p-3 text-xs sm:text-sm md:text-base lg:text-lg font-bold text-blue-200">Sábado</th>
+                                                <th class="hologram-cell p-2 sm:p-3 text-xs sm:text-sm md:text-base lg:text-lg font-bold text-blue-200">Domingo</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${weekendHTML}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (slide.type === 'outro') {
+                content.innerHTML = `
+                    <div class="space-y-4 sm:space-y-6 md:space-y-8">
+                        <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-300 via-cyan-400 to-purple-400 animate-glow leading-tight px-2">
+                            ${slide.title}
+                        </h1>
+                        <p class="text-xl sm:text-2xl md:text-3xl lg:text-4xl text-cyan-200 animate-pulse-slow px-2">
+                            ${slide.subtitle}
+                        </p>
+                        <div class="flex justify-center gap-3 sm:gap-4 mt-8 sm:mt-12">
+                            <div class="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-green-400 animate-bounce"></div>
+                            <div class="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-cyan-400 animate-bounce" style="animation-delay: 0.2s"></div>
+                            <div class="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-purple-400 animate-bounce" style="animation-delay: 0.4s"></div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            updateCounter();
+            updateIndicators();
+        }
+
+        function updateCounter() {
+            document.getElementById('counter').textContent = `${currentSlide + 1} / ${slides.length}`;
+        }
+
+        function updateIndicators() {
+            const container = document.getElementById('indicators');
+            container.innerHTML = slides.map((_, i) => `
+                <button class="w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-all ${i === currentSlide ? 'bg-cyan-400 w-6 sm:w-8' : 'bg-cyan-400/40 hover:bg-cyan-400/70'}" onclick="window.goToSlide(${i})"></button>
+            `).join('');
+        }
+
+        function nextSlide() {
+            currentSlide = (currentSlide + 1) % slides.length;
+            renderSlide();
+        }
+
+        function prevSlide() {
+            currentSlide = (currentSlide - 1 + slides.length) % slides.length;
+            renderSlide();
+        }
+
+        window.goToSlide = function(index) {
+            currentSlide = index;
+            renderSlide();
+        }
+
+        document.getElementById('nextBtn').addEventListener('click', nextSlide);
+        document.getElementById('prevBtn').addEventListener('click', prevSlide);
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') nextSlide();
+            if (e.key === 'ArrowLeft') prevSlide();
+        });
+
+        renderSlide();
+    </script>
+</body>
+</html>

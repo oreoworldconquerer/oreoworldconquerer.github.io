@@ -1,0 +1,70 @@
+<!--
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+  <title>calm galaxy</title>
+</head>
+-->
+ 
+  <div class="main"></div>
+ 
+ <!-- only used the JS bit underneath to generate the  box-shadow CSS box-shadow input.  list that layered shadow in line, let light that shine. 
+-->
+
+
+<!--
+
+function randomNumber(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min
+}
+
+const STAR_COUNT = 400
+let result = ""
+for(let i = 0; i < STAR_COUNT; i++){
+    result += `${randomNumber(-50, 50)}vw ${randomNumber(-50, 50)}vh ${randomNumber(0, 1)}px ${randomNumber(0, 1)}px #fff,`
+}
+console.log(result.substring(0, result.length - 1))
+
+-->
+<style>
+    html, body{
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background: black;
+    }
+    .main{
+        width: 100%;
+        height: 100%;
+        box-shadow:  -45vw -20vh 0px 0px #fff,
+        34vw 48vh 1px 1px #fff,
+        23vw -35vh 1px 0px #fff,
+        -10vw 40vh 1px 1px #fff,
+        -25vw -30vh 1px 0px #fff,
+        15vw 10vh 0px 0px #fff,
+        -40vw 45vh 1px 1px #fff,
+        50vw -10vh 1px 0px #fff,
+        -5vw -25vh 0px 0px #fff,
+        30vw 20vh 1px 1px #fff,
+        -15vw 35vh 1px 0px #fff,
+        40vw -40vh 0px 0px #fff,
+        -50vw 15vh 1px 1px #fff,
+        10vw -5vh 1px 0px #fff,
+        -30vw -15vh 0px 0px #fff,
+        5vw 30vh 1px 1px #fff,
+        -20vw -45vh 1px 0px #fff,
+        45vw 5vh 0px 0px #fff,
+        -35vw 25vh 1px 1px #fff,
+        25vw -50vh 1px 0px #fff,
+        -12vw -8vh 0px 0px #fff,
+        38vw 38vh 1px 1px #fff,
+        -48vw -28vh 1px 0px #fff,
+        18vw 12vh 0px 0px #fff,
+        -22vw 42vh 1px 1px #fff,
+        42vw -18vh 1px 0px #fff,
+        -8vw -12vh 0px 0px #fff,
+        ;
+    }
